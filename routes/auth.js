@@ -5,7 +5,7 @@ const passport = require('passport');
 const rateLimit = require('express-rate-limit');
 const User = require('../models/User');
 const path = require('path');
-app.set('trust proxy', 1);
+
 
 // basic rate limiter for auth endpoints
 const authLimiter = rateLimit({

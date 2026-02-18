@@ -14,6 +14,8 @@ const bcrypt = require("bcryptjs");
 const User = require("./models/User");
 
 const app = express();
+app.set('trust proxy', 1);
+
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
