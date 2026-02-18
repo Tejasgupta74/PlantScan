@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Reset Password - PlantScan</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    :root{--green-600:#27ae60;--green-50:#f0fdf4;--text-900:#0f172a;--text-600:#475569;--border:#e2e8f0}
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:linear-gradient(135deg,#bbf7d0 0%,#a7f3d0 50%,#6ee7b7 100%);display:flex;align-items:center;justify-content:center;height:100vh;padding:20px}
+    .card{background:#fff;padding:32px;border-radius:16px;box-shadow:0 8px 24px rgba(15,23,42,0.08);max-width:420px;width:100%;animation:slideIn 0.4s ease}
+    @keyframes slideIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    .header{display:flex;align-items:center;gap:12px;margin-bottom:24px}
+    .header-icon{font-size:28px;color:var(--green-600)}
+    h2{font-size:22px;font-weight:800;color:var(--text-900);margin:0}
+    .form-group{margin-bottom:16px}
+    label{font-size:12px;font-weight:600;color:var(--text-600);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px}
+    input{width:100%;padding:11px;border:1px solid var(--border);border-radius:8px;font-size:14px;transition:all 0.2s}
+    input:focus{outline:none;border-color:var(--green-600);box-shadow:0 0 0 3px rgba(39,174,96,0.1)}
+    button{width:100%;padding:11px;border-radius:8px;border:none;background:var(--green-600);color:#fff;font-weight:700;cursor:pointer;font-size:14px;transition:all 0.2s;box-shadow:0 8px 16px rgba(39,174,96,0.15)}
+    button:hover{background:#229954;transform:translateY(-2px);box-shadow:0 12px 24px rgba(39,174,96,0.2)}
+    button:disabled{opacity:0.6;cursor:not-allowed;transform:none}
+    .btn-secondary{background:transparent !important;color:var(--green-600);font-weight:600;padding:0;font-size:13px;border:none;cursor:pointer;transition:all 0.2s;text-decoration:none;width:auto;outline:none !important;box-shadow:none !important}
+    .btn-secondary:hover{text-decoration:underline}
+    .btn-secondary:disabled{opacity:0.6;cursor:not-allowed}
+    .footer{margin-top:16px;text-align:center;font-size:13px;display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:nowrap}
+    .footer a{color:var(--green-600);text-decoration:none;font-weight:600;transition:all 0.2s}
+    .footer a:hover{text-decoration:underline}
+    .error{color:#dc2626;margin-bottom:12px;padding:10px;background:#fee2e2;border-radius:6px;font-size:13px;display:none}
+    .error.show{display:block}
+    .success{color:#16a34a;margin-top:12px;padding:10px;background:var(--green-50);border-radius:6px;font-size:13px;display:none}
+    .success.show{display:block}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header"><i class="fas fa-key header-icon"></i><h2>Reset Password</h2></div>
+    <div id="err" class="error"></div>
+    <form id="resetForm">
+      <div class="form-group"><label>Email</label><input id="email" type="email" placeholder="you@example.com" required></div>
+      <div class="form-group"><label>OTP Code</label><input id="otp" type="text" placeholder="6-digit code" required></div>
+      <div class="form-group"><label>New Password</label><input id="password" type="password" placeholder="Min 8 characters" required></div>
+      <div class="form-group"><label>Confirm Password</label><input id="confirm" type="password" placeholder="Confirm" required></div>
+      <button type="submit" id="resetBtn">Reset Password</button>
+    </form>
+    <div id="msg" class="success"></div>
+    <div class="footer"><button type="button" id="resendBtn" class="btn-secondary">Resend OTP</button><a href="/login">Back to login</a></div>
+  </div>
+
+  <script>
+    function passwordChecks(pw) {
+      return /.{8,}/.test(pw) && /[a-z]/.test(pw) && /[A-Z]/.test(pw) && /\d/.test(pw) && /[^A-Za-z0-9]/.test(pw);
+    }
+    document.getElementById('resendBtn').addEventListener('click', async () => {
+      const email = document.getElementById('email').value.trim();
+      const err = document.getElementById('err');
+      const btn = document.getElementById('resendBtn');
+      err.textContent=''; err.classList.remove('show');
+      if (!email) { err.textContent = 'Please provide your email first.'; err.classList.add('show'); return; }
+      btn.disabled = true;
+      btn.textContent = 'Sending...';
+      try {
+        const res = await fetch('/forgot', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ email }) });
+        const d = await res.json();
+        if (!res.ok) { err.textContent = d.error || 'Failed to send OTP.'; err.classList.add('show'); btn.disabled = false; btn.textContent = 'Resend OTP'; return; }
+        err.textContent = 'OTP sent to your email!';
+        err.classList.add('show');
+        setTimeout(()=>{ btn.disabled = false; btn.textContent = 'Resend OTP'; err.classList.remove('show'); }, 2000);
+      } catch (e) { err.textContent = e.message || 'Network error'; err.classList.add('show'); btn.disabled = false; btn.textContent = 'Resend OTP'; }
+    });
+    document.getElementById('resetForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim();
+      const otp = document.getElementById('otp').value.trim();
+      const password = document.getElementById('password').value;
+      const confirm = document.getElementById('confirm').value;
+      const err = document.getElementById('err');
+      const msg = document.getElementById('msg');
+      err.textContent=''; err.classList.remove('show'); msg.textContent=''; msg.classList.remove('show');
+      if (!email || !otp || !password || !confirm) { err.textContent='All fields required.'; err.classList.add('show'); return; }
+      if (password !== confirm) { err.textContent='Passwords do not match.'; err.classList.add('show'); return; }
+      if (!passwordChecks(password)) { err.textContent='Password must be 8+ chars, include upper, lower, number and special.'; err.classList.add('show'); return; }
+      try {
+        const res = await fetch('/reset', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ email, otp, password, confirmPassword: confirm }) });
+        const d = await res.json();
+        if (!res.ok) { err.textContent = d.error || 'Reset failed'; err.classList.add('show'); } else { msg.textContent = d.message || 'Password reset successful. Redirecting...'; msg.classList.add('show'); setTimeout(()=>window.location.href='/login',1500); }
+      } catch (e) { err.textContent = e.message || 'Network error'; err.classList.add('show'); }
+    });
+  </script>
+</body>
+</html>

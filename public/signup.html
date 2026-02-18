@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sign up - PlantScan</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { 
+      font-family:Segoe UI, Tahoma, Geneva, Verdana, sans-serif; 
+      background:linear-gradient(135deg, #16a34a 0%, #059669 100%); 
+      display:flex; 
+      align-items:center; 
+      justify-content:center; 
+      height:100vh;
+      padding:20px;
+    }
+    .container { display:flex; gap:40px; align-items:center; max-width:900px; width:100%; }
+    .branding { color:#fff; }
+    .branding h1 { font-size:36px; margin-bottom:12px; }
+    .branding p { font-size:16px; opacity:0.9; margin-bottom:20px; line-height:1.6; }
+    .card { 
+      background:#fff; 
+      padding:28px; 
+      border-radius:16px; 
+      box-shadow:0 20px 60px rgba(0,0,0,0.3); 
+      width:100%;
+      max-width:400px;
+      animation:slideIn 0.4s ease;
+    }
+    @keyframes slideIn { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+    h2 { margin-bottom:16px; color:#2c3e50; font-size:24px; display:flex; align-items:center; gap:12px; }
+    .form-group { margin-bottom:12px; }
+    label { font-size:12px; color:#4b5563; font-weight:600; display:block; margin-bottom:4px; }
+    input { width:100%; padding:12px 14px; margin:0; border:1px solid #e6e9ee; border-radius:8px; font-size:14px; transition:all 0.3s; }
+    input:focus { outline:none; border-color:#16a34a; box-shadow:0 0 0 3px rgba(22,163,74,0.1); }
+    .pw-strength { font-size:12px; color:#6b7280; margin-top:6px; }
+    .pw-strength-bar { width:100%; height:4px; background:#e6e9ee; border-radius:99px; margin:4px 0 8px; overflow:hidden; }
+    .pw-strength-bar-inner { height:100%; transition:all 0.3s; width:0%; }
+    .pw-strength-bar-inner.weak { width:25%; background:#e74c3c; }
+    .pw-strength-bar-inner.medium { width:50%; background:#f59e0b; }
+    .pw-strength-bar-inner.strong { width:100%; background:#16a34a; }
+    button { width:100%; padding:10px; border-radius:8px; border:none; background:#16a34a; color:#fff; font-weight:700; cursor:pointer; font-size:15px; margin-top:6px; transition:all 0.3s; }
+    button:hover { background:#15803d; transform:translateY(-2px); box-shadow:0 8px 16px rgba(22,163,74,0.3); }
+    button:active { transform:translateY(0); }
+    .small { text-align:center; margin-top:14px; color:#6b7280; font-size:13px; }
+    .small a { color:#16a34a; text-decoration:none; font-weight:600; }
+    .small a:hover { text-decoration:underline; }
+    .divider { text-align:center; margin:14px 0; color:#bbb; font-size:11px; }
+    .google { 
+      display:flex; 
+      gap:10px; 
+      align-items:center; 
+      justify-content:center; 
+      padding:12px; 
+      border-radius:8px; 
+      background:#f9f9f9; 
+      border:1px solid #e6e9ee; 
+      cursor:pointer; 
+      text-decoration:none; 
+      color:#333;
+      font-weight:600;
+      font-size:14px;
+      transition:all 0.3s;
+    }
+    .google:hover { background:#f0f0f0; border-color:#d0d0d0; }
+    .error { color:#e74c3c; font-weight:600; margin-bottom:16px; display:none; padding:10px; background:#fde8e8; border-radius:6px; font-size:13px; }
+    @media (max-width:768px) { .container { flex-direction:column; gap:20px; } .branding { text-align:center; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="branding">
+      <h1><i class="fas fa-leaf" style="color:#fff;"></i> PlantScan</h1>
+      <p>Join thousands of plant enthusiasts. Get AI-powered insights about your plants instantly.</p>
+    </div>
+    <div class="card">
+      <h2><i class="fas fa-user-plus"></i> Create Account</h2>
+      <div class="error" id="error"></div>
+      
+      <div class="form-group">
+        <label for="name">Full Name</label>
+        <input id="name" type="text" placeholder="John Doe" required />
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input id="email" type="email" placeholder="you@example.com" required />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input id="password" type="password" placeholder="••••••••" required />
+        <div class="pw-strength-bar"><div class="pw-strength-bar-inner" id="pwBar"></div></div>
+        <div class="pw-strength" id="pwStrength">Password must include: uppercase, lowercase, number, special character</div>
+      </div>
+
+      <div class="form-group">
+        <label for="confirm">Confirm Password</label>
+        <input id="confirm" type="password" placeholder="••••••••" required />
+      </div>
+
+      <button id="signupBtn"><i class="fas fa-user-plus"></i> Create Account</button>
+
+      <div class="divider">or</div>
+
+      <a class="google" href="/auth/google"><i class="fab fa-google" style="color:#db4437; font-size:18px;"></i> Continue with Google</a>
+
+      <div class="small">Already have an account? <a href="/login">Login</a></div>
+    </div>
+  </div>
+
+  <script>
+    const errorDiv = document.getElementById('error');
+    const pwField = document.getElementById('password');
+    const pwStrengthDiv = document.getElementById('pwStrength');
+
+    function validateEmail(email) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    function passwordChecks(pw) {
+      return {
+        length: /.{8,}/.test(pw),
+        lower: /[a-z]/.test(pw),
+        upper: /[A-Z]/.test(pw),
+        digit: /\d/.test(pw),
+        special: /[^A-Za-z0-9]/.test(pw),
+      };
+    }
+
+    function strengthMessage(pw) {
+      const checks = passwordChecks(pw);
+      const passed = Object.values(checks).filter(Boolean).length;
+      const bar = document.getElementById('pwBar');
+      if (pw.length === 0) { 
+        document.getElementById('pwStrength').textContent = 'Password must include: uppercase, lowercase, number, special character';
+        bar.className = 'pw-strength-bar-inner';
+        return { ok: false };
+      }
+      if (passed === 5) { 
+        document.getElementById('pwStrength').textContent = '✓ Strong password';
+        bar.className = 'pw-strength-bar-inner strong';
+        return { ok: true };
+      }
+      if (passed >= 3) { 
+        document.getElementById('pwStrength').textContent = '△ Medium strength';
+        bar.className = 'pw-strength-bar-inner medium';
+        return { ok: false };
+      }
+      document.getElementById('pwStrength').textContent = '✗ Weak password';
+      bar.className = 'pw-strength-bar-inner weak';
+      return { ok: false };
+    }
+
+    pwField.addEventListener('input', (e) => {
+      strengthMessage(e.target.value);
+    });
+
+    document.getElementById('signupBtn').addEventListener('click', async () => {
+      errorDiv.style.display = 'none';
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const confirm = document.getElementById('confirm').value;
+
+      if (!name || !email || !password || !confirm) {
+        errorDiv.textContent = 'All fields are required.'; errorDiv.style.display = 'block'; return;
+      }
+
+      if (!validateEmail(email)) {
+        errorDiv.textContent = 'Please enter a valid email address.'; errorDiv.style.display = 'block'; return;
+      }
+
+      if (password !== confirm) {
+        errorDiv.textContent = 'Passwords do not match.'; errorDiv.style.display = 'block'; return;
+      }
+
+      const checks = passwordChecks(password);
+      const missing = Object.entries(checks).filter(([k,v]) => !v).map(([k]) => k);
+      if (missing.length > 0) {
+        errorDiv.textContent = 'Password must include: ' + missing.join(', ');
+        errorDiv.style.display = 'block';
+        return;
+      }
+
+      try {
+        const res = await fetch('/signup', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, email, password, confirmPassword: confirm }) });
+        const data = await res.json();
+        if (!res.ok) { errorDiv.textContent = data.error || 'Signup failed'; errorDiv.style.display = 'block'; return; }
+        window.location.href = '/login';
+      } catch (err) {
+        errorDiv.textContent = err.message || 'Signup failed'; errorDiv.style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>
