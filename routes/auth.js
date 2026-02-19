@@ -92,9 +92,8 @@ return nodemailer.createTransport({
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
   },
-  tls: {
-    servername: "smtp.gmail.com"
-  },
+  family: 4,
+
   connectionTimeout: 20000,
   greetingTimeout: 20000,
 });
