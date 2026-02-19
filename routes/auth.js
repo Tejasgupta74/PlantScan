@@ -87,16 +87,16 @@ function getMailer() {
 return nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: Number(process.env.SMTP_PORT),
-  secure: true,
+  secure: process.env.SMTP_SECURE === "true", // ✅ FIX
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
   },
-  family: 4,
-
+  family: 4, // force IPv4
   connectionTimeout: 20000,
   greetingTimeout: 20000,
 });
+
   }
 
   return null;
