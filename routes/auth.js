@@ -82,16 +82,23 @@ router.get('/reset', (req, res) => {
 // Helper: create transporter if SMTP env configured
 function getMailer() {
   if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
-    const nodemailer = require('nodemailer');
-    return nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT) : 465,
-      secure: process.env.SMTP_SECURE === 'true',
-      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-    });
-  }
-  return null;
+  const nodemailer = require("nodemailer");
+
+  return nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT) : 465,
+    secure: process.env.SMTP_SECURE === "true",
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+    connectionTimeout: 15000,
+    greetingTimeout: 15000,
+  });
 }
+
+return null;
+
 
 // POST /forgot - send OTP to email (if user exists)
 router.post('/forgot', authLimiter, async (req, res) => {
