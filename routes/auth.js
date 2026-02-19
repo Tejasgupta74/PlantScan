@@ -79,6 +79,8 @@ router.get('/reset', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'reset.html'));
 });
 
+const dns = require("dns");
+
 function getMailer() {
   if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
     const nodemailer = require("nodemailer");
@@ -86,21 +88,24 @@ function getMailer() {
     return nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: Number(process.env.SMTP_PORT),
-      secure: process.env.SMTP_SECURE === "true", // true for 465
+      secure: process.env.SMTP_SECURE === "true",
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
       },
-      family: 4,                 // force IPv4 (helps on Railway)
-      connectionTimeout: 20000,  // increase timeout
+
+      family: 4,                 // force IPv4
+      connectionTimeout: 20000,
       greetingTimeout: 20000,
       socketTimeout: 20000,
+
+      tls: {
+        rejectUnauthorized: false,
+      },
     });
   }
-
   return null;
 }
-
 
 
 // POST /forgot - send OTP to email (if user exists)
