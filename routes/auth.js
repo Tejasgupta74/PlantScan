@@ -86,23 +86,19 @@ function getMailer() {
     const nodemailer = require("nodemailer");
 
     return nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT),
-      secure: process.env.SMTP_SECURE === "false",
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
+  host: process.env.SMTP_HOST,
+  port: 465,
+  secure: true,   // ✅ REQUIRED for 465
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+  family: 4,
+  connectionTimeout: 60000,
+  greetingTimeout: 60000,
+  socketTimeout: 60000,
+});
 
-      family: 4,                 // force IPv4
-      connectionTimeout: 20000,
-      greetingTimeout: 20000,
-      socketTimeout: 20000,
-
-      tls: {
-        rejectUnauthorized: false,
-      },
-    });
   }
   return null;
 }
