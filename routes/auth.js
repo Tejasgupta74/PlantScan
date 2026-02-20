@@ -80,28 +80,21 @@ router.get('/reset', (req, res) => {
 });
 
 function getMailer() {
-  // Try MailerSend first (API-based, works on Render)
+  // Try MailerSend SMTP (works on Render)
   if (process.env.MAILERSEND_API_KEY) {
-    const axios = require('axios');
-    return {
-      sendMail: async (options) => {
-        try {
-          return await axios.post('https://api.mailersend.com/v1/email', {
-            from: {
-              email: process.env.MAILERSEND_FROM || 'noreply@trial-3z6ypq02k8m2jvx5.mlsender.net',
-              name: 'PlantScan'
-            },
-            to: [{ email: options.to }],
-            subject: options.subject,
-            text: options.text,
-          }, {
-            headers: { 'X-Mailersend-Key': process.env.MAILERSEND_API_KEY }
-          });
-        } catch (err) {
-          throw new Error(`MailerSend error: ${err.message}`);
-        }
-      }
-    };
+    const nodemailer = require("nodemailer");
+    return nodemailer.createTransport({
+      host: 'smtp.mailersend.net',
+      port: 587,
+      secure: false,
+      auth: {
+        user: 'MS_' + process.env.MAILERSEND_API_KEY,
+        pass: process.env.MAILERSEND_API_KEY,
+      },
+      connectionTimeout: 30000,
+      greetingTimeout: 30000,
+      socketTimeout: 30000,
+    });
   }
   
   // Fallback: Try Resend (API-based)
