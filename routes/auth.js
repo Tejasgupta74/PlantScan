@@ -80,7 +80,31 @@ router.get('/reset', (req, res) => {
 });
 
 function getMailer() {
-  // Try Resend first (API-based, works on Render)
+  // Try MailerSend first (API-based, works on Render)
+  if (process.env.MAILERSEND_API_KEY) {
+    const axios = require('axios');
+    return {
+      sendMail: async (options) => {
+        try {
+          return await axios.post('https://api.mailersend.com/v1/email', {
+            from: {
+              email: process.env.MAILERSEND_FROM || 'noreply@trial-3z6ypq02k8m2jvx5.mlsender.net',
+              name: 'PlantScan'
+            },
+            to: [{ email: options.to }],
+            subject: options.subject,
+            text: options.text,
+          }, {
+            headers: { 'X-Mailersend-Key': process.env.MAILERSEND_API_KEY }
+          });
+        } catch (err) {
+          throw new Error(`MailerSend error: ${err.message}`);
+        }
+      }
+    };
+  }
+  
+  // Fallback: Try Resend (API-based)
   if (process.env.RESEND_API_KEY) {
     const { Resend } = require('resend');
     const resend = new Resend(process.env.RESEND_API_KEY);
@@ -94,23 +118,6 @@ function getMailer() {
         });
       }
     };
-  }
-  
-  // Fallback to Nodemailer SMTP
-  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
-    const nodemailer = require("nodemailer");
-    return nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: parseInt(process.env.SMTP_PORT || 587),
-      secure: process.env.SMTP_SECURE === 'true',
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-      connectionTimeout: 30000,
-      greetingTimeout: 30000,
-      socketTimeout: 30000,
-    });
   }
   
   return null;
