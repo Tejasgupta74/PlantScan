@@ -79,26 +79,40 @@ router.get('/reset', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'reset.html'));
 });
 
-const dns = require("dns");
-
 function getMailer() {
+  // Try Resend first (API-based, works on Render)
+  if (process.env.RESEND_API_KEY) {
+    const { Resend } = require('resend');
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    return {
+      sendMail: async (options) => {
+        return resend.emails.send({
+          from: options.from || process.env.RESEND_FROM || 'noreply@resend.dev',
+          to: options.to,
+          subject: options.subject,
+          text: options.text,
+        });
+      }
+    };
+  }
+  
+  // Fallback to Nodemailer SMTP
   if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
     const nodemailer = require("nodemailer");
-
     return nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: parseInt(process.env.SMTP_PORT || 587),
-  secure: process.env.SMTP_SECURE === 'true',
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-  connectionTimeout: 30000,
-  greetingTimeout: 30000,
-  socketTimeout: 30000,
-});
-
+      host: process.env.SMTP_HOST,
+      port: parseInt(process.env.SMTP_PORT || 587),
+      secure: process.env.SMTP_SECURE === 'true',
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+      connectionTimeout: 30000,
+      greetingTimeout: 30000,
+      socketTimeout: 30000,
+    });
   }
+  
   return null;
 }
 
